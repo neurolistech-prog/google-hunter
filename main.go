@@ -7,7 +7,6 @@ import (
 	"google-hunter/core"
 	"net/http"
 	"sync"
-	"time"
 )
 
 // Structure pour le message Discord
@@ -31,7 +30,7 @@ func sendDiscordAlert(message string) {
 }
 
 func main() {
-	// Cible de test : ton portfolio
+	// Cible de test : ton portfolio et Google
 	targets := []string{
 		"https://neurolistech-prog.github.io/Portfolio-2",
 		"https://www.google.com",
@@ -39,14 +38,12 @@ func main() {
 
 	var wg sync.WaitGroup
 	fmt.Println("--- 🛡️ Lancement de l'Agent Google-Hunter ---")
-	fmt.Printf("--- 🎯 Cibles : %v ---\n", len(targets))
 
 	for _, url := range targets {
 		wg.Add(1)
 		go func(u string) {
 			defer wg.Done()
 			
-			// On appelle le scanner que nous avons mis à jour dans core/scanner.go
 			found, details := core.ScanTarget(u)
 			
 			if found {
