@@ -1,34 +1,32 @@
 package core
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 )
 
-// ScanTarget analyse la cible et retourne un message si une anomalie est trouvée
+// ScanTarget analyse la cible et retourne (VRAI, Détails) si une anomalie est trouvée
 func ScanTarget(url string) (bool, string) {
-	client := &http.Client{Timeout: 5 * time.Second}
+	client := &http.Client{
+		Timeout: 5 * time.Second,
+	}
 	
-	// Liste de fichiers à tester sur ton portfolio
-	files := []string{"/", "/index.html", "/.git/config", "/README.md"}
+	// On teste la racine et un dossier sensible théorique
+	paths := []string{"/", "/.git/config"}
 
-	for _, file := range files {
-		fullURL := url + file
+	for _, path := range paths {
+		fullURL := url + path
 		resp, err := client.Get(fullURL)
 		if err != nil {
 			continue
 		}
 		defer resp.Body.Close()
 
-		// Si on trouve un fichier qui ne devrait pas être là (ex: .git) 
-		// ou si on confirme que le site répond bien
-		if resp.StatusCode == 200 {
-			if file == "/.git/config" {
-				return true, "ALERTE : Dossier Git exposé sur " + fullURL
-			}
-			fmt.Printf("[+] Check réussi sur : %s\n", fullURL)
+		// Si le serveur répond 200 (OK) sur /.git/config, c'est une faille critique
+		if resp.StatusCode == 200 && path == "/.git/config" {
+			return true, "Dossier .git exposé ! (Fuite de code source)"
 		}
 	}
+
 	return false, ""
 }

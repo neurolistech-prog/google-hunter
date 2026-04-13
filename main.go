@@ -9,53 +9,40 @@ import (
 	"sync"
 )
 
-// Structure pour le message Discord
 type DiscordMessage struct {
 	Content string `json:"content"`
 }
 
 const webhookURL = "https://discord.com/api/webhooks/1493290406048436386/6whKo-aV73x_wRR4ELaoUIJwgLjHeh4LLUklc1XqOoHn5srj-ExzUwhlr0tPdKNWNqxl"
 
-// sendDiscordAlert envoie une notification push sur ton serveur Discord
 func sendDiscordAlert(message string) {
 	msg := DiscordMessage{Content: "🚀 **Agent Alert** : " + message}
 	payload, _ := json.Marshal(msg)
-
-	resp, err := http.Post(webhookURL, "application/json", bytes.NewBuffer(payload))
-	if err != nil {
-		fmt.Printf("Erreur lors de l'envoi Discord : %v\n", err)
-		return
-	}
-	defer resp.Body.Close()
+	http.Post(webhookURL, "application/json", bytes.NewBuffer(payload))
 }
 
 func main() {
-	// Cible de test : ton portfolio et Google
 	targets := []string{
 		"https://neurolistech-prog.github.io/Portfolio-2",
 		"https://www.google.com",
 	}
 
 	var wg sync.WaitGroup
-	fmt.Println("--- 🛡️ Lancement de l'Agent Google-Hunter ---")
+	fmt.Println("--- 🛡️ Agent Google-Hunter en ligne ---")
 
 	for _, url := range targets {
 		wg.Add(1)
 		go func(u string) {
 			defer wg.Done()
-			
 			found, details := core.ScanTarget(u)
-			
 			if found {
-				fullMsg := fmt.Sprintf("Faille détectée sur %s\nDétails : %s", u, details)
-				fmt.Println("[!!!]", fullMsg)
-				sendDiscordAlert(fullMsg)
+				sendDiscordAlert(fmt.Sprintf("Faille sur %s : %s", u, details))
+				fmt.Printf("[!!!] Alerte envoyée pour %s\n", u)
 			} else {
-				fmt.Printf("[+] %s analysé (aucune faille critique).\n", u)
+				fmt.Printf("[+] %s : RAS\n", u)
 			}
 		}(url)
 	}
-
 	wg.Wait()
 	fmt.Println("--- ✅ Scan terminé ---")
 }
