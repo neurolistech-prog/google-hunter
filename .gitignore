@@ -1,19 +1,35 @@
-# Binaires
-agent-sec
+# --- Binaires et exécutables ---
+# Ignore les fichiers compilés pour toutes les plateformes
 google-hunter
+agent-sec
 *.exe
 *.exe~
 *.dll
 *.so
 *.dylib
+bin/
 
-# Fichiers de log et résultats
-*.log
-results.json
+# --- Outils de test et couverture ---
+*.test
+*.out
+coverage.txt
 
-# Dépendances (si tu utilises des vendors)
+# --- Dépendances ---
+# En Go, on ne push généralement pas le dossier vendor
 vendor/
 
-# OS spécifiques
+# --- Environnement et secrets ---
+# Très important : ne jamais push tes clés API ou tes configurations locales
+.env
+*.local
+secrets.yml
+
+# --- Dossiers d'IDE et Système ---
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
+
+# --- Logs ---
+*.log
+results.json
