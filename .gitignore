@@ -1,0 +1,19 @@
+# Binaires
+agent-sec
+google-hunter
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Fichiers de log et résultats
+*.log
+results.json
+
+# Dépendances (si tu utilises des vendors)
+vendor/
+
+# OS spécifiques
+.DS_Store
+Thumbs.db
