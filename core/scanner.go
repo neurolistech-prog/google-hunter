@@ -6,33 +6,29 @@ import (
 	"time"
 )
 
-// Result structure pour stocker les découvertes
-type Result struct {
-	URL   string
-	Found bool
-	Msg   string
-}
+// ScanTarget analyse la cible et retourne un message si une anomalie est trouvée
+func ScanTarget(url string) (bool, string) {
+	client := &http.Client{Timeout: 5 * time.Second}
+	
+	// Liste de fichiers à tester sur ton portfolio
+	files := []string{"/", "/index.html", "/.git/config", "/README.md"}
 
-// ScanTarget vérifie les vulnérabilités de base
-func ScanTarget(url string) Result {
-	client := &http.Client{
-		Timeout: 5 * time.Second,
-		// Empêcher de suivre les redirections pour analyser le serveur précis
-		CheckRedirect: func(req *http.Request, via []*http.Request) error {
-			return http.ErrUseLastResponse
-		},
+	for _, file := range files {
+		fullURL := url + file
+		resp, err := client.Get(fullURL)
+		if err != nil {
+			continue
+		}
+		defer resp.Body.Close()
+
+		// Si on trouve un fichier qui ne devrait pas être là (ex: .git) 
+		// ou si on confirme que le site répond bien
+		if resp.StatusCode == 200 {
+			if file == "/.git/config" {
+				return true, "ALERTE : Dossier Git exposé sur " + fullURL
+			}
+			fmt.Printf("[+] Check réussi sur : %s\n", fullURL)
+		}
 	}
-
-	resp, err := client.Get(url)
-	if err != nil {
-		return Result{URL: url, Found: false, Msg: err.Error()}
-	}
-	defer resp.Body.Close()
-
-	// Logique de détection : Absence de headers de sécurité
-	if resp.Header.Get("Content-Security-Policy") == "" {
-		return Result{URL: url, Found: true, Msg: "Manque la politique CSP (potentiel XSS)"}
-	}
-
-	return Result{URL: url, Found: false, Msg: "RAS"}
+	return false, ""
 }
