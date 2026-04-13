@@ -1,0 +1,17 @@
+name: Security Scan
+on:
+  schedule:
+    - cron: '0 0 * * *' # Tourne tous les jours à minuit
+  workflow_dispatch: # Permet de le lancer manuellement
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+      - name: Run Scan
+        run: go run main.go
